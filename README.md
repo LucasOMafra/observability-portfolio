@@ -1,5 +1,6 @@
 # 📊 Observability Portfolio
 
+Dashboard - Dia 1
 ![Dashboard - Visão geral](dia-1-grafana-prometheus/docs/dashboard.png)
 
 Stack completa de Observabilidade e Data Visualization construída como portfólio profissional.
