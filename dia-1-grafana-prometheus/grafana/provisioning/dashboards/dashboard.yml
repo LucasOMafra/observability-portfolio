@@ -1,0 +1,16 @@
+# ============================================================
+# dashboard.yml - Diz ao Grafana onde encontrar os dashboards
+# ============================================================
+
+apiVersion: 1
+
+providers:
+  - name: "Portfolio Day 1"
+    orgId: 1
+    folder: "Portfolio"
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards

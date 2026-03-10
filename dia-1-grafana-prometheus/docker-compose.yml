@@ -1,0 +1,95 @@
+version: "3.8"
+
+# ============================================================
+# DIA 1 - PORTFOLIO: Sistema de Monitoramento com Prometheus + Grafana
+# Stack: Prometheus (coleta métricas) + Grafana (visualização)
+#        + Node Exporter (métricas do seu Mac)
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # PROMETHEUS
+  # O que faz: Coleta métricas a cada 15 segundos de cada "target"
+  # Acesse em: http://localhost:9090
+  # ----------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  # ----------------------------------------------------------
+  # NODE EXPORTER
+  # O que faz: Expõe métricas do sistema operacional do seu Mac
+  #            (CPU, RAM, disco, rede) para o Prometheus coletar
+  # Acesse em: http://localhost:9100/metrics (texto puro, feio, mas real)
+  # ----------------------------------------------------------
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  # ----------------------------------------------------------
+  # GRAFANA
+  # O que faz: Lê os dados do Prometheus e exibe gráficos bonitos
+  # Acesse em: http://localhost:3000
+  # Login padrão: admin / admin123
+  # ----------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=localhost
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+# ----------------------------------------------------------
+# VOLUMES: Guardam os dados mesmo que o container reinicie
+# ----------------------------------------------------------
+volumes:
+  prometheus_data:
+  grafana_data:
+
+# ----------------------------------------------------------
+# NETWORK: Rede interna para os containers se comunicarem
+# ----------------------------------------------------------
+networks:
+  monitoring:
+    driver: bridge

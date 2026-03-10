@@ -1,0 +1,37 @@
+# ============================================================
+# prometheus.yml - Arquivo de configuração do Prometheus
+#
+# O Prometheus funciona por "scraping": ele visita cada target
+# a cada X segundos e coleta as métricas disponíveis em /metrics
+# ============================================================
+
+global:
+  scrape_interval: 15s       # Coleta métricas a cada 15 segundos
+  evaluation_interval: 15s   # Avalia as regras de alerta a cada 15s
+  scrape_timeout: 10s        # Timeout de cada coleta
+
+# Regras de alerta (vazio por enquanto - nível iniciante)
+rule_files: []
+
+# ============================================================
+# SCRAPE CONFIGS - De onde o Prometheus vai coletar dados
+# ============================================================
+scrape_configs:
+
+  # O próprio Prometheus expõe métricas sobre si mesmo
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          environment: "local"
+          project: "portfolio-day1"
+
+  # Node Exporter - métricas do sistema operacional
+  # Vai coletar: CPU, memória, disco, rede, temperatura, etc.
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          environment: "local"
+          host: "macbook"
+          project: "portfolio-day1"

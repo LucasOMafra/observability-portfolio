@@ -1,0 +1,20 @@
+# ============================================================
+# datasource.yml - Configura automaticamente o Prometheus no Grafana
+#
+# "Provisioning" = configurar o Grafana automaticamente via arquivos
+# Em vez de configurar pela UI toda vez que subir o container,
+# deixamos o arquivo fazer isso por nós. Isso é "Infrastructure as Code"
+# ============================================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090   # Nome do serviço no docker-compose
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "15s"         # Mesmo intervalo do scrape
+      httpMethod: POST
